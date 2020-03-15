@@ -1,24 +1,34 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.IO.Ports;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace NFCReader
 {
     public partial class MainForm : Form
     {
-        private delegate void AppendTextToUI(string text);
-        private SerialPort _serialPort;
+        private delegate void AppendTextToUI(LogEventArgs eventArgs);
+
+        private readonly Logic _logic;
 
         public MainForm()
         {
             InitializeComponent();
+            _logic = new Logic();
+            _logic.NewEventReceived += logic_NewEventReceived;
+        }
+
+        private void logic_NewEventReceived(object sender, LogEventArgs e)
+        {
+            if (msgDetails.InvokeRequired)
+            {
+                var d = new AppendTextToUI(AppendText);
+                msgDetails.Invoke(d, new[] { e });
+            }
+            else
+            {
+                AppendText(e);
+            }
         }
 
         private void Form1_Shown(object sender, EventArgs e)
@@ -33,46 +43,26 @@ namespace NFCReader
                 return;
             }
 
-            if (_serialPort == null)
-            {
-                _serialPort = new SerialPort(comList.SelectedText)
-                {
-                    BaudRate = 9600,
-                    Parity = Parity.None,
-                    StopBits = StopBits.One,
-                    DataBits = 8,
-                    Handshake = Handshake.None
-                };
-                _serialPort.DataReceived += serialPort_DataReceived;
-            }
-
-            _serialPort.Open();
+            _logic.StartListening(comList.SelectedText);
         }
 
         private void stopButton_Click(object sender, EventArgs e)
         {
-            _serialPort?.Close();
+            _logic.StopListening();
         }
 
-        private void serialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        private void AppendText(LogEventArgs eventArgs)
         {
-            var sp = (SerialPort) sender;
+            msgDetails.SelectionStart = msgDetails.TextLength;
+            msgDetails.SelectionLength = 0;
 
-            var srtData = sp.ReadLine();
-            if (msgDetails.InvokeRequired)
-            {
-                var d = new AppendTextToUI(AppendText);
-                msgDetails.Invoke(d, new [] { srtData });
-            }
-            else
-            {
-                AppendText(srtData);
-            }
-        }
+            msgDetails.SelectionColor = eventArgs.Type == LogType.Trace
+                ? Color.DarkCyan
+                : Color.Blue;
 
-        private void AppendText(string text)
-        {
-            msgDetails.AppendText($"{msgDetails.Lines.Length + 1}: {text}");
+            msgDetails.AppendText($"{msgDetails.Lines.Length + 1}: {eventArgs.Message}");
+            msgDetails.SelectionColor = msgDetails.ForeColor;
+
             msgDetails.SelectionStart = msgDetails.TextLength;
             msgDetails.ScrollToCaret();
         }
