@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO.Ports;
+using System.Linq;
 
 namespace NFCReader
 {
@@ -38,15 +39,41 @@ namespace NFCReader
 
         private void serialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            var sp = (SerialPort)sender;
-            var strData = sp.ReadLine();
+            try
+            {
+                var sp = (SerialPort)sender;
+                var strData = sp.ReadLine();
 
-            NewEventReceived?.Invoke(this, new LogEventArgs(LogType.Data, strData));
+                NewEventReceived?.Invoke(this, new LogEventArgs(LogType.Data, strData));
+            }
+            catch (Exception exception)
+            {
+                ErrorEvent(exception);
+            }
         }
 
         private void TraceEvent(string message)
         {
             NewEventReceived?.Invoke(this, new LogEventArgs(LogType.Trace, $"{message}{Environment.NewLine}"));
+        }
+
+        private void ErrorEvent(Exception e)
+        {
+            NewEventReceived?.Invoke(this, new LogEventArgs(LogType.Error, $"{e}{Environment.NewLine}"));
+        }
+
+        public void SendRawData(byte[] cmd)
+        {
+            try
+            {
+                TraceEvent($"Try to send message: [{string.Join(", ", cmd.Select(b => $"0x{b:X2}"))}]");
+                _serialPort.Write(cmd, 0, cmd.Length);
+                TraceEvent("Message is sent");
+            }
+            catch (Exception e)
+            {
+                ErrorEvent(e);
+            }
         }
     }
 }

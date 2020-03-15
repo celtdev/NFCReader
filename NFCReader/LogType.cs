@@ -3,6 +3,7 @@
     public enum LogType
     {
         Trace,
+        Error,
         Data
     }
 }

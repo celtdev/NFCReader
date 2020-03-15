@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.IO.Ports;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace NFCReader
@@ -33,7 +34,15 @@ namespace NFCReader
 
         private void Form1_Shown(object sender, EventArgs e)
         {
-            comList.Items.AddRange(SerialPort.GetPortNames());
+            updateCOM_Click(sender, e);
+        }
+
+        private void updateCOM_Click(object sender, EventArgs e)
+        {
+            var newInfoList = SerialPort.GetPortNames();
+
+            comList.Items.Clear();
+            comList.Items.AddRange(newInfoList.Cast<object>().ToArray());
         }
 
         private void startButton_Click(object sender, EventArgs e)
@@ -56,15 +65,37 @@ namespace NFCReader
             msgDetails.SelectionStart = msgDetails.TextLength;
             msgDetails.SelectionLength = 0;
 
-            msgDetails.SelectionColor = eventArgs.Type == LogType.Trace
-                ? Color.DarkCyan
-                : Color.Blue;
+            switch (eventArgs.Type)
+            {
+                case LogType.Trace:
+                    msgDetails.SelectionColor = Color.DarkCyan;
+                    break;
+                case LogType.Error:
+                    msgDetails.SelectionColor = Color.Red;
+                    break;
+                case LogType.Data:
+                    msgDetails.SelectionColor = Color.Blue;
+                    break;
+                default:
+                    msgDetails.SelectionColor = msgDetails.ForeColor;
+                    break;
+            }
 
-            msgDetails.AppendText($"{msgDetails.Lines.Length + 1}: {eventArgs.Message}");
+            msgDetails.AppendText($"> {eventArgs.Message}");
             msgDetails.SelectionColor = msgDetails.ForeColor;
 
             msgDetails.SelectionStart = msgDetails.TextLength;
             msgDetails.ScrollToCaret();
+        }
+
+        private void getReaderInfo_Click(object sender, EventArgs e)
+        {
+            _logic.GetReaderInfo();
+        }
+
+        private void getAID_Click(object sender, EventArgs e)
+        {
+            _logic.GetAID();
         }
     }
 }
