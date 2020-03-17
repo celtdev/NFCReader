@@ -97,5 +97,10 @@ namespace NFCReader
         {
             _logic.GetAID();
         }
+
+        private void checkReaders_Click(object sender, EventArgs e)
+        {
+            _logic.CheckReaders();
+        }
     }
 }
