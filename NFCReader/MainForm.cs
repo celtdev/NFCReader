@@ -20,8 +20,8 @@ namespace NFCReader
 
             builder.RegisterInstance(this).As<ILogger>();
             builder.RegisterType<Logic.Logic>().As<ILogic>();
-            //builder.RegisterType<IsoProvider>().As<IDataProvider>();
-            builder.RegisterType<FakeDataProvider>().As<IDataProvider>();
+            builder.RegisterType<IsoProvider>().As<IDataProvider>();
+            //builder.RegisterType<FakeDataProvider>().As<IDataProvider>();
             builder.RegisterType<SaveToFileDataProcessor>().As<IDataProcessor>();
 
             var container = builder.Build();
