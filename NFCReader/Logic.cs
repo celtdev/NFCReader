@@ -1,59 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Globalization;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using PCSC;
-using PCSC.Utils;
 using PCSC.Iso7816;
 
 namespace NFCReader
 {
     public class Logic
     {
-        private readonly PortProvider _portProvider;
+        //private readonly PortProvider _portProvider;
         public event EventHandler<LogEventArgs> NewEventReceived;
 
-        public Logic()
-        {
-            _portProvider = new PortProvider();
-            _portProvider.NewEventReceived += (sender, data) => NewEventReceived?.Invoke(this, data);
-        }
+//        public Logic()
+//        {
+//            _portProvider = new PortProvider();
+//            _portProvider.NewEventReceived += (sender, data) => NewEventReceived?.Invoke(this, data);
+//        }
 
-        public void StartListening(string port)
+        public void CheckReaders()
         {
-            _portProvider.StartListening(port);
-        }
-
-        public void StopListening()
-        {
-            _portProvider.StopListening();
-        }
-
-        public void GetReaderInfo()
-        {
-            var cmd = new byte[] { 0xFF, 0x00, 0x48, 0x00, 0x00 };
-            _portProvider.SendRawData(cmd);
-        }
-
-        public void GetAID()
-        {
-            var cmd = new byte[] { 0x00, 0xA4, 0x04, 0x00, 0x0E, 0x32, 0x50, 0x41, 0x59, 0x2E, 0x53, 0x59, 0x53, 0x2E, 0x44, 0x44, 0x46, 0x30, 0x31, 0x00 };
-            _portProvider.SendRawData(cmd);
-        }
-
-        public void CheckReaders(string prmSelectorSelectedText)
-        {
-            if (!string.IsNullOrEmpty(prmSelectorSelectedText))
-            {
-                var strP1 = prmSelectorSelectedText.Substring(2, 2);
-                var strP2 = prmSelectorSelectedText.Substring(4, 2);
-                var p1 = byte.Parse(strP1, NumberStyles.HexNumber);
-                var p2 = byte.Parse(strP2, NumberStyles.HexNumber);
-            }
-
             try
             {
                 using (var context = new SCardContext())
@@ -82,7 +49,7 @@ namespace NFCReader
                     using (var isoReader = new IsoReader(context: context, readerName: readerName, mode: SCardShareMode.Shared, protocol: SCardProtocol.Any, releaseContextOnDispose: false))
                     {
                         SelectApplication(isoReader);
-                        GetData(isoReader, prmSelectorSelectedText);
+                        GetData(isoReader);
                     }
                 }
             }
@@ -108,16 +75,16 @@ namespace NFCReader
             TraceEvent($"SW1 SW2 = {response.SW1:X2} {response.SW2:X2}{Environment.NewLine}");
         }
 
-        private void GetData(IIsoReader reader, string prmSelectorSelectedText)
+        private void GetData(IIsoReader reader)
         {
             var cmd = new CommandApdu(IsoCase.Case2Short, reader.ActiveProtocol)
-                            {
-                                CLA = 0x00,
-                                Instruction = InstructionCode.GetData,
-                                P1 = 0x00,
-                                P2 = 0x00,
-                                Le = 0x00
-                            };
+            {
+                CLA = 0x00,
+                Instruction = InstructionCode.GetData,
+                P1 = 0x00,
+                P2 = 0x00,
+                Le = 0x00
+            };
 
             var part = 0;
             var finish = false;
@@ -127,6 +94,11 @@ namespace NFCReader
 
             while (!finish)
             {
+                if (part > byte.MaxValue)
+                {
+                    break;
+                }
+
                 part++;
                 var response = reader.Transmit(cmd);
 
@@ -159,8 +131,9 @@ namespace NFCReader
             }
             catch (Exception e)
             {
-                TraceEvent("Try to parse data: ");
+                TraceEvent("Error occured while parse data: ");
                 ErrorEvent(e);
+                TraceEvent($"{Environment.NewLine}Recevied data: {BitConverter.ToString(buffer.ToArray())}");
             }
         }
 

@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Drawing;
-using System.IO.Ports;
-using System.Linq;
 using System.Windows.Forms;
 
 namespace NFCReader
@@ -69,19 +67,9 @@ namespace NFCReader
             msgDetails.ScrollToCaret();
         }
 
-        private void getReaderInfo_Click(object sender, EventArgs e)
-        {
-            _logic.GetReaderInfo();
-        }
-
-        private void getAID_Click(object sender, EventArgs e)
-        {
-            _logic.GetAID();
-        }
-
         private void checkReaders_Click(object sender, EventArgs e)
         {
-            _logic.CheckReaders(prmSelector.Text);
+            _logic.CheckReaders();
         }
     }
 }
