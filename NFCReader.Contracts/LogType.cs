@@ -1,4 +1,4 @@
-﻿namespace NFCReader
+﻿namespace NFCReader.Contracts
 {
     public enum LogType
     {

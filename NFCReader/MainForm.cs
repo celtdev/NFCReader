@@ -1,50 +1,41 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
+using NFCReader.Contracts;
 
 namespace NFCReader
 {
-    public partial class MainForm : Form
+    public partial class MainForm : Form, ILogger
     {
-        private delegate void AppendTextToUI(LogEventArgs eventArgs);
-
-        private readonly Logic _logic;
+        private delegate void AppendTextToUI(LogArgs args);
+        private readonly ILogic _logic;
 
         public MainForm()
         {
             InitializeComponent();
-            _logic = new Logic();
-            _logic.NewEventReceived += logic_NewEventReceived;
+            _logic = new Logic.Logic(this);
         }
 
-        private void logic_NewEventReceived(object sender, LogEventArgs e)
+
+        private void WriteLog(LogArgs args)
         {
             if (msgDetails.InvokeRequired)
             {
                 var d = new AppendTextToUI(AppendText);
-                msgDetails.Invoke(d, new[] { e });
+                msgDetails.Invoke(d, args);
             }
             else
             {
-                AppendText(e);
+                AppendText(args);
             }
         }
 
-        private void Form1_Shown(object sender, EventArgs e)
-        {
-            updateCOM_Click(sender, e);
-        }
-
-        private void updateCOM_Click(object sender, EventArgs e)
-        {
-        }
-
-        private void AppendText(LogEventArgs eventArgs)
+        private void AppendText(LogArgs args)
         {
             msgDetails.SelectionStart = msgDetails.TextLength;
             msgDetails.SelectionLength = 0;
 
-            switch (eventArgs.Type)
+            switch (args.Type)
             {
                 case LogType.Trace:
                     msgDetails.SelectionColor = Color.DarkCyan;
@@ -60,16 +51,33 @@ namespace NFCReader
                     break;
             }
 
-            msgDetails.AppendText($"> {eventArgs.Message}");
+            msgDetails.AppendText($"{args.Timestamp}> {args.Message}");
             msgDetails.SelectionColor = msgDetails.ForeColor;
 
             msgDetails.SelectionStart = msgDetails.TextLength;
             msgDetails.ScrollToCaret();
         }
 
+        public void Trace(string message)
+        {
+            WriteLog(new LogArgs(LogType.Trace, message));
+        }
+
+        public void Error(Exception exception, string message = null)
+        {
+            var msg = string.IsNullOrEmpty(message) ? exception.ToString() : $"{message}{exception}";
+            WriteLog(new LogArgs(LogType.Error, msg));
+        }
+
+        public void Data(string message)
+        {
+            WriteLog(new LogArgs(LogType.Data, message));
+        }
+
+
         private void checkReaders_Click(object sender, EventArgs e)
         {
-            _logic.CheckReaders();
+            _logic.GetData();
         }
     }
 }

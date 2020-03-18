@@ -1,23 +1,20 @@
 ﻿using System;
 
-namespace NFCReader
+namespace NFCReader.Contracts
 {
-    public class LogEventArgs: EventArgs
+    public class LogArgs
     {
-        public LogDirection Direction { get; }
-
         public LogType Type { get; }
 
         public DateTime Timestamp { get; }
 
         public string Message { get; }
 
-        public LogEventArgs(LogType type, string message, LogDirection direction = LogDirection.Request)
+        public LogArgs(LogType type, string message)
         {
             Timestamp = DateTime.Now;
             Type = type;
             Message = message;
-            Direction = direction;
         }
     }
 }

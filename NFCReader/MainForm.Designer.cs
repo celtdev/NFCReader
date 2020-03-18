@@ -76,7 +76,6 @@
             this.Controls.Add(this.toolStrip1);
             this.Name = "MainForm";
             this.Text = "NFC Reader";
-            this.Shown += new System.EventHandler(this.Form1_Shown);
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
             this.ResumeLayout(false);
