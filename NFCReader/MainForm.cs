@@ -39,25 +39,6 @@ namespace NFCReader
 
         private void updateCOM_Click(object sender, EventArgs e)
         {
-            var newInfoList = SerialPort.GetPortNames();
-
-            comList.Items.Clear();
-            comList.Items.AddRange(newInfoList.Cast<object>().ToArray());
-        }
-
-        private void startButton_Click(object sender, EventArgs e)
-        {
-            if (string.IsNullOrEmpty(comList.SelectedText))
-            {
-                return;
-            }
-
-            _logic.StartListening(comList.SelectedText);
-        }
-
-        private void stopButton_Click(object sender, EventArgs e)
-        {
-            _logic.StopListening();
         }
 
         private void AppendText(LogEventArgs eventArgs)
@@ -100,7 +81,7 @@ namespace NFCReader
 
         private void checkReaders_Click(object sender, EventArgs e)
         {
-            _logic.CheckReaders();
+            _logic.CheckReaders(prmSelector.Text);
         }
     }
 }

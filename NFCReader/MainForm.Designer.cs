@@ -30,14 +30,8 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
-            this.updateCOM = new System.Windows.Forms.ToolStripButton();
-            this.comList = new System.Windows.Forms.ToolStripComboBox();
-            this.startButton = new System.Windows.Forms.ToolStripButton();
-            this.stopButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.getReaderInfo = new System.Windows.Forms.ToolStripButton();
-            this.getAID = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.prmSelector = new System.Windows.Forms.ToolStripComboBox();
             this.checkReaders = new System.Windows.Forms.ToolStripButton();
             this.msgDetails = new System.Windows.Forms.RichTextBox();
             this.toolStrip1.SuspendLayout();
@@ -46,14 +40,8 @@
             // toolStrip1
             // 
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.updateCOM,
-            this.comList,
-            this.startButton,
-            this.stopButton,
             this.toolStripSeparator1,
-            this.getReaderInfo,
-            this.getAID,
-            this.toolStripSeparator2,
+            this.prmSelector,
             this.checkReaders});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
@@ -61,76 +49,17 @@
             this.toolStrip1.TabIndex = 0;
             this.toolStrip1.Text = "toolStrip1";
             // 
-            // updateCOM
-            // 
-            this.updateCOM.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.updateCOM.Enabled = false;
-            this.updateCOM.Image = ((System.Drawing.Image)(resources.GetObject("updateCOM.Image")));
-            this.updateCOM.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.updateCOM.Name = "updateCOM";
-            this.updateCOM.Size = new System.Drawing.Size(101, 22);
-            this.updateCOM.Text = "Update COM List";
-            this.updateCOM.Click += new System.EventHandler(this.updateCOM_Click);
-            // 
-            // comList
-            // 
-            this.comList.Enabled = false;
-            this.comList.Name = "comList";
-            this.comList.Size = new System.Drawing.Size(121, 25);
-            // 
-            // startButton
-            // 
-            this.startButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.startButton.Enabled = false;
-            this.startButton.Image = ((System.Drawing.Image)(resources.GetObject("startButton.Image")));
-            this.startButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.startButton.Name = "startButton";
-            this.startButton.Size = new System.Drawing.Size(86, 22);
-            this.startButton.Text = "Start Listening";
-            this.startButton.Click += new System.EventHandler(this.startButton_Click);
-            // 
-            // stopButton
-            // 
-            this.stopButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.stopButton.Enabled = false;
-            this.stopButton.Image = ((System.Drawing.Image)(resources.GetObject("stopButton.Image")));
-            this.stopButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.stopButton.Name = "stopButton";
-            this.stopButton.Size = new System.Drawing.Size(86, 22);
-            this.stopButton.Text = "Stop Listening";
-            this.stopButton.Click += new System.EventHandler(this.stopButton_Click);
-            // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
             this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
             // 
-            // getReaderInfo
+            // prmSelector
             // 
-            this.getReaderInfo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.getReaderInfo.Enabled = false;
-            this.getReaderInfo.Image = ((System.Drawing.Image)(resources.GetObject("getReaderInfo.Image")));
-            this.getReaderInfo.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.getReaderInfo.Name = "getReaderInfo";
-            this.getReaderInfo.Size = new System.Drawing.Size(92, 22);
-            this.getReaderInfo.Text = "Get Reader Info";
-            this.getReaderInfo.Click += new System.EventHandler(this.getReaderInfo_Click);
-            // 
-            // getAID
-            // 
-            this.getAID.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.getAID.Enabled = false;
-            this.getAID.Image = ((System.Drawing.Image)(resources.GetObject("getAID.Image")));
-            this.getAID.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.getAID.Name = "getAID";
-            this.getAID.Size = new System.Drawing.Size(51, 22);
-            this.getAID.Text = "Get AID";
-            this.getAID.Click += new System.EventHandler(this.getAID_Click);
-            // 
-            // toolStripSeparator2
-            // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
+            this.prmSelector.Items.AddRange(new object[] {
+            "00 CA 00 00 00"});
+            this.prmSelector.Name = "prmSelector";
+            this.prmSelector.Size = new System.Drawing.Size(121, 25);
             // 
             // checkReaders
             // 
@@ -138,8 +67,8 @@
             this.checkReaders.Image = ((System.Drawing.Image)(resources.GetObject("checkReaders.Image")));
             this.checkReaders.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.checkReaders.Name = "checkReaders";
-            this.checkReaders.Size = new System.Drawing.Size(88, 22);
-            this.checkReaders.Text = "Check Readers";
+            this.checkReaders.Size = new System.Drawing.Size(56, 22);
+            this.checkReaders.Text = "Get Data";
             this.checkReaders.Click += new System.EventHandler(this.checkReaders_Click);
             // 
             // msgDetails
@@ -174,16 +103,10 @@
         #endregion
 
         private System.Windows.Forms.ToolStrip toolStrip1;
-        private System.Windows.Forms.ToolStripComboBox comList;
-        private System.Windows.Forms.ToolStripButton startButton;
-        private System.Windows.Forms.ToolStripButton stopButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-        private System.Windows.Forms.ToolStripButton getReaderInfo;
-        private System.Windows.Forms.ToolStripButton getAID;
-        private System.Windows.Forms.ToolStripButton updateCOM;
         private System.Windows.Forms.RichTextBox msgDetails;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripButton checkReaders;
+        private System.Windows.Forms.ToolStripComboBox prmSelector;
     }
 }
 

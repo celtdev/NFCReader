@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Text;
+using Newtonsoft.Json;
 using PCSC;
 using PCSC.Utils;
 using PCSC.Iso7816;
@@ -40,8 +44,16 @@ namespace NFCReader
             _portProvider.SendRawData(cmd);
         }
 
-        public void CheckReaders()
+        public void CheckReaders(string prmSelectorSelectedText)
         {
+            if (!string.IsNullOrEmpty(prmSelectorSelectedText))
+            {
+                var strP1 = prmSelectorSelectedText.Substring(2, 2);
+                var strP2 = prmSelectorSelectedText.Substring(4, 2);
+                var p1 = byte.Parse(strP1, NumberStyles.HexNumber);
+                var p2 = byte.Parse(strP2, NumberStyles.HexNumber);
+            }
+
             try
             {
                 using (var context = new SCardContext())
@@ -67,12 +79,10 @@ namespace NFCReader
                         TraceEvent($"ATR: {BitConverter.ToString(status.GetAtr() ?? new byte[0])}");
                     }
 
-                    TraceEvent($"{new string('=', 15)}{Environment.NewLine}");
-
-                    using (var isoReader = new IsoReader(context: context, readerName: readerName, mode: SCardShareMode.Shared, protocol: SCardProtocol.T1, releaseContextOnDispose: false))
+                    using (var isoReader = new IsoReader(context: context, readerName: readerName, mode: SCardShareMode.Shared, protocol: SCardProtocol.Any, releaseContextOnDispose: false))
                     {
                         SelectApplication(isoReader);
-                        GetData(isoReader);
+                        GetData(isoReader, prmSelectorSelectedText);
                     }
                 }
             }
@@ -98,41 +108,60 @@ namespace NFCReader
             TraceEvent($"SW1 SW2 = {response.SW1:X2} {response.SW2:X2}{Environment.NewLine}");
         }
 
-        private void GetData(IIsoReader reader)
+        private void GetData(IIsoReader reader, string prmSelectorSelectedText)
         {
             var cmd = new CommandApdu(IsoCase.Case2Short, reader.ActiveProtocol)
-            {
-                CLA = 0x00,
-                Instruction = InstructionCode.GetData,
-                P1 = 0x00,
-                P2 = 0x00,
-                Le = 0x00
-            };
+                            {
+                                CLA = 0x00,
+                                Instruction = InstructionCode.GetData,
+                                P1 = 0x00,
+                                P2 = 0x00,
+                                Le = 0x00
+                            };
 
+            var part = 0;
+            var finish = false;
+            TraceEvent($"{new string('=', 15)}{Environment.NewLine}");
             TraceEvent($"Send GetData: {BitConverter.ToString(cmd.ToArray())}");
-            var response = reader.Transmit(cmd);
-            TraceEvent($"SW1 SW2 = {response.SW1:X2} {response.SW2:X2}{Environment.NewLine}");
+            var buffer = new List<byte>();
 
-            if (!response.HasData)
+            while (!finish)
             {
-                TraceEvent("No data.");
+                part++;
+                var response = reader.Transmit(cmd);
+
+                var dataInfo = "No Data";
+                if (!response.HasData)
+                {
+                    finish = true;
+                }
+                else
+                {
+                    var data = response.GetData();
+                    buffer.AddRange(data);
+                    dataInfo = $"DataCount: {data.Length}";
+                    if (data.Length < 256)
+                    {
+                        finish = true;
+                    }
+                }
+
+                TraceEvent($"Receved part {part} - SW1 SW2 = {response.SW1:X2} {response.SW2:X2} DataCount: {dataInfo}");
             }
-            else
+
+            try
             {
-                var data = response.GetData();
-                TraceEvent($"Challenge: {BitConverter.ToString(data)}");
+                var rawData = Encoding.UTF8.GetString(buffer.ToArray());
+                var jsonObject = JsonConvert.DeserializeObject(rawData);
+                var formattedData = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
 
-                try
-                {
-                    var str = Encoding.UTF8.GetString(data);
-                    TraceEvent($"!!! = {str}");
-                }
-                catch (Exception e)
-                {
-                }
+                TraceEvent($"Data:{Environment.NewLine}{formattedData}");
             }
-
-            TraceEvent(Environment.NewLine);
+            catch (Exception e)
+            {
+                TraceEvent("Try to parse data: ");
+                ErrorEvent(e);
+            }
         }
 
 
