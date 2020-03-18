@@ -41,6 +41,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IDataProcessor.cs" />
+    <Compile Include="IDataProvider.cs" />
     <Compile Include="ILogger.cs" />
     <Compile Include="ILogic.cs" />
     <Compile Include="LogArgs.cs" />

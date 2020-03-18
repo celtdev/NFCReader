@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
+using Autofac;
 using NFCReader.Contracts;
+using NFCReader.Logic;
 
 namespace NFCReader
 {
@@ -13,7 +15,17 @@ namespace NFCReader
         public MainForm()
         {
             InitializeComponent();
-            _logic = new Logic.Logic(this);
+
+            var builder = new ContainerBuilder();
+
+            builder.RegisterInstance(this).As<ILogger>();
+            builder.RegisterType<Logic.Logic>().As<ILogic>();
+            //builder.RegisterType<IsoProvider>().As<IDataProvider>();
+            builder.RegisterType<FakeDataProvider>().As<IDataProvider>();
+            builder.RegisterType<SaveToFileDataProcessor>().As<IDataProcessor>();
+
+            var container = builder.Build();
+            _logic = container.Resolve<ILogic>();
         }
 
 
@@ -51,7 +63,7 @@ namespace NFCReader
                     break;
             }
 
-            msgDetails.AppendText($"{args.Timestamp}> {args.Message}");
+            msgDetails.AppendText($"{args.Timestamp}> {args.Message}{Environment.NewLine}");
             msgDetails.SelectionColor = msgDetails.ForeColor;
 
             msgDetails.SelectionStart = msgDetails.TextLength;
